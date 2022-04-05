@@ -72,6 +72,7 @@ class XnliProcessor(DataProcessor):
                 text_b = line[1]
                 label = "contradiction" if line[2].strip() == "contradictory" else line[2].strip()
                 assert isinstance(text_a, str) and isinstance(text_b, str) and isinstance(label, str)
+                print(text_a, text_b)
                 examples.append(InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label, language=lg))
         return examples
 

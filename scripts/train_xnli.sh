@@ -18,6 +18,13 @@ MODEL=${1:-bert-base-multilingual-cased}
 GPU=${2:-0}
 DATA_DIR=${3:-"$REPO/download/"}
 OUT_DIR=${4:-"$REPO/outputs/"}
+TRAIN_LG=${5:-"en"}
+
+if [TRAIN_LG == "en"]; then
+  TRAIN_SPLIT = "train"
+else
+  TRAIN_SPLIT = "translate-train"
+fi
 
 export CUDA_VISIBLE_DEVICES=$GPU
 
@@ -36,6 +43,9 @@ elif [ $MODEL == "xlm-roberta-large" ] || [ $MODEL == "xlm-roberta-base" ]; then
   MODEL_TYPE="xlmr"
 fi
 
+# HARDCODED FOR MASTER THESIS
+MODEL_TYPE="xlmr"
+
 if [ $MODEL == "xlm-mlm-100-1280" ] || [ $MODEL == "xlm-roberta-large" ]; then
   BATCH_SIZE=2
   GRAD_ACC=16
@@ -52,7 +62,8 @@ mkdir -p $SAVE_DIR
 python $PWD/third_party/run_classify.py \
   --model_type $MODEL_TYPE \
   --model_name_or_path $MODEL \
-  --train_language en \
+  --train_language $TRAIN_LG \
+  --train_split $TRAIN_SPLIT \
   --task_name $TASK \
   --do_train \
   --do_eval \

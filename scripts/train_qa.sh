@@ -22,6 +22,9 @@ TGT=${3:-xquad}
 GPU=${4:-0}
 DATA_DIR=${5:-"$REPO/download/"}
 OUT_DIR=${6:-"$REPO/outputs/"}
+TRAIN_LG=${7:-"en"}
+TEST_LG=${8:-"en"}
+
 
 BATCH_SIZE=4
 GRAD_ACC=8
@@ -37,6 +40,8 @@ elif [ $MODEL == "xlm-roberta-large" ] || [ $MODEL == "xlm-roberta-base" ]; then
   MODEL_TYPE="xlm-roberta"
 fi
 
+MODEL_TYPE="xlm-roberta"
+
 # Model path where trained model should be stored
 MODEL_PATH=$OUT_DIR/$SRC/${MODEL}_LR${LR}_EPOCH${NUM_EPOCHS}_maxlen${MAXL}_batchsize${BATCH_SIZE}_gradacc${GRAD_ACC}
 mkdir -p $MODEL_PATH
@@ -45,10 +50,17 @@ if [ $SRC == 'squad' ]; then
   TASK_DATA_DIR=${DATA_DIR}/squad
   TRAIN_FILE=${TASK_DATA_DIR}/train-v1.1.json
   PREDICT_FILE=${TASK_DATA_DIR}/dev-v1.1.json
+  if [TRAIN_LG != "en"]; then
+      TRAIN_FILE=${TASK_DATA_DIR}/squad.translate.train.en-${TRAIN_LG}.json
+  fi
+  if [TEST_LG != "en"]; then
+      TRAIN_FILE=${TASK_DATA_DIR}/squad.translate.dev.en-${TEST_LG}.json
+  fi
+
 else
   TASK_DATA_DIR=${DATA_DIR}/tydiqa
-  TRAIN_FILE=${TASK_DATA_DIR}/tydiqa-goldp-v1.1-train/tydiqa.en.train.json
-  PREDICT_FILE=${TASK_DATA_DIR}/tydiqa-goldp-v1.1-dev/tydiqa.goldp.en.dev.json
+  TRAIN_FILE=${TASK_DATA_DIR}/tydiqa-goldp-v1.1-train/tydiqa.${TRAIN_LG}.train.json
+  PREDICT_FILE=${TASK_DATA_DIR}/tydiqa-goldp-v1.1-dev/tydiqa.goldp.${TEST_LG}.dev.json
 fi
 
 # train
@@ -72,8 +84,8 @@ CUDA_VISIBLE_DEVICES=$GPU python third_party/run_squad.py \
   --output_dir ${MODEL_PATH} \
   --weight_decay 0.0001 \
   --threads 8 \
-  --train_lang en \
-  --eval_lang en
+  --train_lang $TRAIN_LG \
+  --eval_lang $TEST_LG
 
 # predict
 bash scripts/predict_qa.sh $MODEL $MODEL_PATH $TGT $GPU $DATA_DIR

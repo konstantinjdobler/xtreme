@@ -39,12 +39,13 @@ PREDICTIONS_DIR=${MODEL_PATH}/predictions
 PRED_DIR=${PREDICTIONS_DIR}/$TGT/
 mkdir -p "${PRED_DIR}"
 
+# TODO adapt to single language
 if [ $TGT == 'xquad' ]; then
-  langs=( en es de el ru tr ar vi th zh hi )
+  langs=(en es de el ru tr ar vi th zh hi)
 elif [ $TGT == 'mlqa' ]; then
-  langs=( en es de ar hi vi zh )
+  langs=(en es de ar hi vi zh)
 elif [ $TGT == 'tydiqa' ]; then
-  langs=( en ar bn fi id ko ru sw te )
+  langs=(en ar bn fi id ko ru sw te)
 fi
 
 echo "************************"
@@ -69,7 +70,7 @@ for lang in ${langs[@]}; do
     --do_eval \
     --eval_lang ${lang} \
     --predict_file "${TEST_FILE}" \
-    --output_dir "${PRED_DIR}" &> /dev/null
+    --output_dir "${PRED_DIR}" &>/dev/null
 done
 
 # Rename files to test pattern
